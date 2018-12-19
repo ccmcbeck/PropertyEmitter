@@ -70,6 +70,7 @@ This is the list of built in events:
 * ```get```: Is fired whenever a property is accessed
 * ```function```: Is fired whenever a function is called
 * ```any```: Is fired when either a get, set or function is triggered
+* ```in```: Fires if an *in* operator has been used on the object
 * ```delete```: Is fired when a property or function is removed (TBD)
 
 
@@ -80,8 +81,10 @@ fired. The arguments passed to the listeners are encapsulated in an object:
 {
   type: "property",
   name: "myprop",
+  event: "function",
   args: ["arg 1", "arg 2", "arg 3"],
-  previous: ["previous arg 1", "previous arg 2"]
+  previous: ["previous arg 1", "previous arg 2"],
+  result: "function response"
 }
 ```
 
