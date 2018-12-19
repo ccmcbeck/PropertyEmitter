@@ -1,0 +1,42 @@
+{
+  "name": "propem",
+  "version": "1.0.0",
+  "description": "An event emitter that emit events whenever an object property is accessed",
+  "author": "Ravi Gairola <mallox@pyxzl.net>",
+  "homepage": "https://github.com/mallocator/PropertyEmitter",
+  "license": "Apache-2.0",
+  "main": "index.js",
+  "keywords": [
+    "EventEmitter",
+    "property",
+    "emit",
+    "event",
+    "proxy",
+    "getter",
+    "setter",
+    "access",
+    "onchange"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mallocator/PropertyEmitter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mallocator/PropertyEmitter/issues",
+    "email": "mallox@pyxzl.net"
+  },
+  "devDependencies": {
+    "chai": "^4",
+    "coveralls": "^3",
+    "gently": "^0.10",
+    "mocha": "^5",
+    "nyc": "^13"
+  },
+  "engine": {
+    "node": ">=8.0"
+  },
+  "scripts": {
+    "test": "nyc --reporter=text --reporter=html mocha --recursive",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
+  }
+}
