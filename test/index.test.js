@@ -75,6 +75,15 @@ describe("PropertyEmitter", () => {
     delete obj.testProp;
   });
   
+  it('should not emit an event when a nonexitent property is deleted', done => {
+    let obj = new PropertyEmitter();
+    obj.emitter.once('delete', () => {
+      expect.fail('Noop should not have triggered the PropertyEmitter');
+    });
+    delete obj.testProp;
+    process.nextTick(done);
+  });
+  
   it('should emit an event when used with the "in" operator', done => {
     let obj = new PropertyEmitter();
     obj.emitter.once('in', context => {
