@@ -21,7 +21,7 @@ about what was called with which parameters and what the previous value was.
 This is an example of how to react to a property being set on your own object.
 
 ```Javascript
-const PropertyEmitter = require('propem');
+const {PropertyEmitter} = require('propem');
 
 class Example extends PropertyEmitter {
   constructor() {
@@ -29,12 +29,12 @@ class Example extends PropertyEmitter {
   }
 }
 
-let emitter = new Example();
-emitter.on('set', console.log);
+let example = new Example();
+example.emitter.on('set', console.log);
 
 emitter.myprop = "a value"
 // => emitter => console.log()
-//    { type: "property", name: "myprop", args: ["a value"], previous: null }
+//    {object: !ref, name: "myprop", current: "a value" }
 ```
 
 
@@ -52,26 +52,48 @@ npm i --save propem
 The PropertyEmitter extends all existing [EventEmitter methods and properties](https://nodejs.org/api/events.html#events_class_eventemitter).
 As such be careful not to overwrite any existing structures.
 
-### PropertyEmitter.constructor(EventEmitter=null)
+### PropertyEmitter.constructor(EventEmitter=null, EmitterName='emitter')
 
 Allows you to set a custom event emitter library. Defaults to the built
 in EventEmitter. In any case don't forget to call the super() method in your
 own constructor, otherwise you're missing initialization even if you go with
 default values.
 
-### PropertyEmitter.on(event, listener)
+The constructor also allows you to specify the property under which to find the
+emitter. Defaults to 'emitter'.
 
-The ```on()``` method has a few built in events that get fired whenever a
-property is accessed.
+### watchProperties(object, EventEmitter=null)
+
+In case you need to construct an emitter but can't add an extra property and want
+the original object to stay clean you can use this function to get a wrapped object
+back that will now emit events on the passed in emitter, without having a reference
+on the object itself.
+
+```Javascript
+const {watchProperties} = require('propem');
+let emitter = new require('events').EventEmitter();
+let watched = watchProperties(obj, emitter);
+
+emitter.on('set', console.log);
+
+watched.myprop = "a value"
+// => emitter => console.log()
+//    {object: !ref, name: "myprop", current: "a value" }
+```
+
+### PropertyEmitter.emitter.on(event, listener)
+
+The ```emitter.on()``` method has a few built in events that get fired whenever 
+a property is accessed, other than that it is an instance of the passed in EventEmitter
+class from the constructor so you can make use of all methods including "on()". 
 
 This is the list of built in events:
 
 * ```set```: Is fired whenever a property is assigned
 * ```get```: Is fired whenever a property is accessed
-* ```function```: Is fired whenever a function is called
-* ```any```: Is fired when either a get, set or function is triggered
+* ```delete```: Is fired when a property is removed
 * ```in```: Fires if an *in* operator has been used on the object
-* ```delete```: Is fired when a property or function is removed (TBD)
+* ```any```: Is fired when either a get, set or function is triggered
 
 
 You can register listeners to these events that react whenever the event get
@@ -82,8 +104,8 @@ fired. The arguments passed to the listeners are encapsulated in an object:
   type: "property",
   name: "myprop",
   event: "function",
-  args: ["arg 1", "arg 2", "arg 3"],
-  previous: ["previous arg 1", "previous arg 2"],
+  current: "current value",
+  previous: "previous value",
   result: "function response"
 }
 ```

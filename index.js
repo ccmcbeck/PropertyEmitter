@@ -1,72 +1,80 @@
-const util = require('util');
 const events = require('events');
 
-
-function allowEmit();
-
-const handler = {
-  apply: (obj, name, args) => {
-    let result = obj[name].call(obj, ...args);
-    let context = { type: 'function', event: 'call', name, args, result }
-    if (!allowEmit(name)) {
-      obj.emit('get', context);
-      obj.emit('any', context);
-    }
-    return result;
-  },
-  get: (obj, name) => {
-    let args = obj[name];
-    let context = { type: 'property', event: 'get', name, args }
-    if (!allowEmit(name) {
-      obj.emit('get', context);
-      obj.emit('any', context);
-    }
-    return args;
-  },
-  set: (obj, name, args) => {
-    let previous = obj[name];
-    obj[name] = args;
-    let context = { type: 'property', event: 'set', name, args, previous }
-    if (!allowEmit(name)) {
-      obj.emit('set', context);
-      obj.emit('any', context);
-    }
-    return true;
-  },
-  in: (obj, name) => {
-    let previous = name in obj;
-    let context = { type: 'property', event: 'in', name, previous }
-    if (!allowEmit(name)) {
-      obj.emit('in', context);
-      obj.emit('any', context);
-    }
-    return previous;
-  },
-  deleteProperty: (obj, name) => {
-    if (obj[name]) {
-      let previous = obj[name];
-      let context = { type: 'property', event: 'delete', name, previous }
-      if (!allowEmit(name)) {
-        obj.emit('delete', context);
-        obj.emit('any', context);
+/**
+ * Returns a proxy that wraps the given object with an event emitter that will fire events whenever properties
+ * are accessed.
+ * @param {Object} obj            The object to be wrapped
+ * @param {EventEmitter} emitter  The event emitter used to emit events
+ * @param {string} emitterName    The name of the emitter property so we don't fire events on emitter access.
+ * @returns {Object}              The proxyfied object
+ */
+function getProxy (obj, emitter, emitterName) {
+  return new Proxy(obj, {
+    get: (object, name) => {
+      let current = object[name];
+      let context = {object, event: 'get', name, current};
+      if (name !== emitterName) {
+        emitter.emit('get', context);
+        emitter.emit('any', context);
       }
-      return result;
-    }
-  }
-};
+      return current;
+    },
+    set: (object, name, current) => {
+      let previous = object[name];
+      object[name] = current;
+      let context = {object, event: 'set', name, current, previous};
+      if (name !== emitterName) {
+        emitter.emit('set', context);
+        emitter.emit('any', context);
+      }
+      return true;
+    },
+    has: (object, name) => {
+      let current = name in object;
+      let context = {object, event: 'in', name, current};
+      if (name !== emitterName) {
+        emitter.emit('in', context);
+        emitter.emit('any', context);
+      }
+      return name in object;
+    },
+    deleteProperty: (obj, name) => {
+      if (obj[name]) {
+        let previous = obj[name];
+        let context = {event: 'delete', name, previous};
+        delete obj[name];
+        if (name !== emitterName) {
+          emitter.emit('delete', context);
+          emitter.emit('any', context);
+        }
+      }
+    },
+  });
+}
 
 class PropertyEmitter {
   /**
-   * The constructor allow you to replace the default emitter with a custom
-   * implementation.
-   * @param {Class<EventEmitter>} [emitter=events.EventEmitter]
+   * The constructor allows you to replace the default emitter with a custom implementation, as well as setting
+   * the property name for the emitter.
+   * @param {EventEmitter} [emitter=new events.EventEmitter()] The event emitter instance to be used for emitting
+   *   events.
+   * @param {string} [emitterName='emitter'] The name under which the emitter can be accessed.
    */
-  constructor(emitter = events.EventEmitter) {
-    util.inherits(PropertyEmitter, emitter);
-    //emitter.prototype.constructor.apply(this)
-    this.__emitter = emitter;
-    return new Proxy(this, handler);
+  constructor ({emitter = new events.EventEmitter(), emitterName = 'emitter'} = {}) {
+    this[emitterName] = emitter;
+    return getProxy(this, emitter, emitterName);
   }
 }
 
-module.exports = PropertyEmitter;
+/**
+ *  This function allows you to wrap an existing object in a Proxy that will fire events on the passed in
+ *  emitter whenever properties are accessed. This method is useful for when you need to keep your original
+ *  object unmodified and don't want an emitter property on it.
+ * @param object
+ * @param emitter
+ */
+function watchProperties (object, emitter) {
+  return getProxy(object, emitter);
+}
+
+module.exports = {PropertyEmitter, watchProperties};
