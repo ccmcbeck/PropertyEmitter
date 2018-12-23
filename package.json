@@ -10,6 +10,7 @@
     "EventEmitter",
     "property",
     "emit",
+    "fire",
     "event",
     "proxy",
     "getter",
@@ -39,5 +40,10 @@
   "scripts": {
     "test": "nyc --reporter=text --reporter=html mocha --recursive",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
-  }
+  },
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ]
 }
