@@ -1,6 +1,6 @@
 {
   "name": "propem",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An event emitter that emit events whenever an object property is accessed",
   "author": "Ravi Gairola <mallox@pyxzl.net>",
   "homepage": "https://github.com/mallocator/PropertyEmitter",

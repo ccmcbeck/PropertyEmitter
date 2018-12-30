@@ -3,12 +3,13 @@ const EventEmitter = require('events').EventEmitter;
 const EventEmitter3 = require('eventemitter3');
 const {PropertyEmitter, watchProperties} = require('..');
 
+class TestClass extends PropertyEmitter {
+  constructor () { super(); }
+  
+  get prop () { return 'test'; }
+}
+
 describe("PropertyEmitter", () => {
-  class TestClass extends PropertyEmitter {
-    constructor () { super(); }
-    
-    get prop () { return 'test'; }
-  }
   
   it('should allow you to instantiate an emitter', () => {
     let obj = new PropertyEmitter();
@@ -50,7 +51,7 @@ describe("PropertyEmitter", () => {
     obj.prop;
   });
   
-  it('should emit an even when a property is assigned', done => {
+  it('should emit an event when a property is assigned', done => {
     let obj = new PropertyEmitter();
     obj.emitter.once('set', context => {
       expect(context.event).equals('set');
@@ -93,6 +94,35 @@ describe("PropertyEmitter", () => {
       done();
     });
     'test' in obj;
+  });
+});
+
+describe('PropertyEmitter wo Listeners', () => {
+  it('should not modify an object when a property is accessed', () => {
+    let obj = new TestClass();
+    expect(obj.prop).to.equal('test');
+    expect(obj.emitter.listenerCount('get')).to.equal(0);
+  });
+  
+  it('should not modify an object when a property is assigned', () => {
+    let obj = new PropertyEmitter();
+    obj.testProp = 'test';
+    expect(obj.testProp).to.equal('test');
+    expect(obj.emitter.listenerCount('set')).to.equal(0);
+  });
+  
+  it('should not modify an object when a property is deleted', () => {
+    let obj = new PropertyEmitter();
+    obj.testProp = 'test';
+    delete obj.testProp;
+    expect(obj.testProp).to.be.undefined;
+    expect(obj.emitter.listenerCount('delete')).to.equal(0);
+  });
+  
+  it('should not modify an object when used with the "in" operator', () => {
+    let obj = new PropertyEmitter();
+    'test' in obj;
+    expect(obj.emitter.listenerCount('in')).to.equal(0);
   });
 });
 

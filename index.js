@@ -5,21 +5,26 @@ const events = require('events');
  * are accessed.
  * @param {Object} obj            The object to be wrapped
  * @param {EventEmitter} emitter  The event emitter used to emit events
- * @param {string} emitterName    The name of the emitter property so we don't fire events on emitter access.
+ * @param {string} [emitterName]  The name of the emitter property so we don't fire events on emitter access.
  * @returns {Object}              The proxyfied object
  */
 function getProxy (obj, emitter, emitterName) {
   return new Proxy(obj, {
     get: (object, name) => {
       let current = object[name];
-      let context = {object, event: 'get', name, current};
-      if (name !== emitterName) {
-        emitter.emit('get', context);
-        emitter.emit('any', context);
+      if (emitter.listenerCount('get') > 0) {
+        let context = {object, event: 'get', name, current};
+        if (name !== emitterName) {
+          emitter.emit('get', context);
+          emitter.emit('any', context);
+        }
       }
       return current;
     },
     set: (object, name, current) => {
+      if (emitter.listenerCount('set') === 0) {
+        return object[name] = current;
+      }
       let previous = object[name];
       object[name] = current;
       let context = {object, event: 'set', name, current, previous};
@@ -30,16 +35,21 @@ function getProxy (obj, emitter, emitterName) {
       return true;
     },
     has: (object, name) => {
-      let current = name in object;
-      let context = {object, event: 'in', name, current};
-      if (name !== emitterName) {
-        emitter.emit('in', context);
-        emitter.emit('any', context);
+      if (emitter.listenerCount('in') > 0) {
+        let current = name in object;
+        let context = {object, event: 'in', name, current};
+        if (name !== emitterName) {
+          emitter.emit('in', context);
+          emitter.emit('any', context);
+        }
       }
       return name in object;
     },
     deleteProperty: (obj, name) => {
-      if (obj[name]) {
+      if (emitter.listenerCount('delete') === 0) {
+        return delete obj[name];
+      }
+      if (Reflect.has(obj, name)) {
         let previous = obj[name];
         let context = {event: 'delete', name, previous};
         delete obj[name];
@@ -47,6 +57,7 @@ function getProxy (obj, emitter, emitterName) {
           emitter.emit('delete', context);
           emitter.emit('any', context);
         }
+        return true;
       }
     },
   });
@@ -77,4 +88,5 @@ function watchProperties (object, emitter) {
   return getProxy(object, emitter);
 }
 
-module.exports = {PropertyEmitter, watchProperties};
+exports.PropertyEmitter = PropertyEmitter;
+exports.watchProperties = watchProperties;
