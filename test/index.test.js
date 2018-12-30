@@ -76,7 +76,7 @@ describe("PropertyEmitter", () => {
     delete obj.testProp;
   });
   
-  it('should not emit an event when a nonexitent property is deleted', done => {
+  it('should not emit an event when a nonexistent property is deleted', done => {
     let obj = new PropertyEmitter();
     obj.emitter.once('delete', () => {
       expect.fail('Noop should not have triggered the PropertyEmitter');

@@ -12,12 +12,10 @@ function getProxy (obj, emitter, emitterName) {
   return new Proxy(obj, {
     get: (object, name) => {
       let current = object[name];
-      if (emitter.listenerCount('get') > 0) {
+      if (emitter.listenerCount('get') > 0 && name !== emitterName) {
         let context = {object, event: 'get', name, current};
-        if (name !== emitterName) {
-          emitter.emit('get', context);
-          emitter.emit('any', context);
-        }
+        emitter.emit('get', context);
+        emitter.emit('any', context);
       }
       return current;
     },
@@ -27,8 +25,8 @@ function getProxy (obj, emitter, emitterName) {
       }
       let previous = object[name];
       object[name] = current;
-      let context = {object, event: 'set', name, current, previous};
       if (name !== emitterName) {
+        let context = {object, event: 'set', name, current, previous};
         emitter.emit('set', context);
         emitter.emit('any', context);
       }
@@ -51,9 +49,9 @@ function getProxy (obj, emitter, emitterName) {
       }
       if (Reflect.has(obj, name)) {
         let previous = obj[name];
-        let context = {event: 'delete', name, previous};
         delete obj[name];
         if (name !== emitterName) {
+          let context = {event: 'delete', name, previous};
           emitter.emit('delete', context);
           emitter.emit('any', context);
         }
