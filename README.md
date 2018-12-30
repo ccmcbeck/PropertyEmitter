@@ -1,7 +1,7 @@
 # PropertyEmitter
 An event emitter that emit events whenever an object property is accessed
 
-[![npm version](https://badge.fury.io/js/PropertyEmitter.svg)](http://badge.fury.io/js/PropertyEmitter)
+[![npm version](https://badge.fury.io/js/propem.svg)](http://badge.fury.io/js/propem)
 [![Build Status](https://travis-ci.org/mallocator/PropertyEmitter.svg?branch=master)](https://travis-ci.org/mallocator/PropertyEmitter)
 [![Coverage Status](https://coveralls.io/repos/mallocator/PropertyEmitter/badge.svg?branch=master&service=github)](https://coveralls.io/github/mallocator/PropertyEmitter?branch=master)
 [![Dependency Status](https://david-dm.org/mallocator/PropertyEmitter.svg)](https://david-dm.org/mallocator/PropertyEmitter)
